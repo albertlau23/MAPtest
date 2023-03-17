@@ -38,6 +38,7 @@ class _OrderTrackingPageState extends State<OrderTrackingPage> {
     permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
+      print("denied");
       if (permission == LocationPermission.denied) {
         return Future.error('Location permissions are denied');
       }
@@ -47,14 +48,17 @@ class _OrderTrackingPageState extends State<OrderTrackingPage> {
       return Future.error(
           'Location permissions are permanently denied, we cannot request permissions.');
     }
+    print("pass");
     return await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
   }
 
-  void getCurrentLocation() {
-    setState(() {
-      _determinePosition().then((v) => currLoc = v);
-      print(currLoc);
+  void getCurrentLocation() async {
+    _determinePosition().then((value) {
+      setState(() {
+        currLoc = value;
+        print(value);
+      });
     });
   }
 
@@ -98,6 +102,7 @@ class _OrderTrackingPageState extends State<OrderTrackingPage> {
 
   @override
   Widget build(BuildContext context) {
+    var size = MediaQuery.of(context).size;
     return Scaffold(
         appBar: AppBar(
           title: Text("Latitude: $titletext"),
@@ -110,29 +115,33 @@ class _OrderTrackingPageState extends State<OrderTrackingPage> {
                 child: Column(
                   children: [
                     Text(titletext),
-                    GoogleMap(
-                      initialCameraPosition:
-                          CameraPosition(target: sourceLocation, zoom: 13.5),
-                      polylines: {
-                        Polyline(
-                            polylineId: PolylineId("route"),
-                            points: polylinesCoordinates,
-                            color: primaryColor,
-                            width: 6)
-                      },
-                      markers: {
-                        // Marker(
-                        //     markerId: MarkerId("curr"),
-                        //     position: _latlngConverter(currLoc!)),
-                        Marker(
-                            markerId: MarkerId("source"),
-                            position: sourceLocation),
-                        Marker(
-                            markerId: MarkerId("Live"),
-                            position: _latlngConverter(liveLoc!)),
-                        // Marker(markerId: MarkerId("Destination"), position: destination)
-                      },
-                    ),
+                    Container(
+                      height: size.height * 0.8,
+                      width: size.width,
+                      child: GoogleMap(
+                        initialCameraPosition: CameraPosition(
+                            target: sourceLocation, zoom: 13.5),
+                        polylines: {
+                          Polyline(
+                              polylineId: PolylineId("route"),
+                              points: polylinesCoordinates,
+                              color: primaryColor,
+                              width: 6)
+                        },
+                        markers: {
+                          // Marker(
+                          //     markerId: MarkerId("curr"),
+                          //     position: _latlngConverter(currLoc!)),
+                          Marker(
+                              markerId: MarkerId("source"),
+                              position: sourceLocation),
+                          Marker(
+                              markerId: MarkerId("Live"),
+                              position: _latlngConverter(liveLoc!)),
+                          // Marker(markerId: MarkerId("Destination"), position: destination)
+                        },
+                      ),
+                    )
                   ],
                 ),
               ));
