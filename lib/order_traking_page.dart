@@ -66,12 +66,13 @@ class _OrderTrackingPageState extends State<OrderTrackingPage> {
     return LatLng(p!.latitude!, p!.longitude!);
   }
 
-  void getPolyPoints() async {
+  void getPolyPoints(p) async {
     PolylinePoints polylinePoints = PolylinePoints();
+
     PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
         google_api_key,
         PointLatLng(sourceLocation.latitude, sourceLocation.longitude),
-        PointLatLng(destination.latitude, destination.longitude));
+        PointLatLng(p.latitude, p.longitude));
     if (result.points.isNotEmpty) {
       result.points.forEach(
           (p) => polylinesCoordinates.add(LatLng(p.latitude, p.longitude)));
@@ -83,13 +84,14 @@ class _OrderTrackingPageState extends State<OrderTrackingPage> {
   void initState() {
     // TODO: implement initState
     getCurrentLocation();
-    getPolyPoints();
     StreamSubscription<Position> positionStream =
         Geolocator.getPositionStream(locationSettings: locationSettings)
             .listen((Position? position) {
       setState(() {
         liveLoc = position;
+
         LatLng p = _latlngConverter(position!);
+        getPolyPoints(p);
         titletext = "langitude : " +
             p.latitude.toString() +
             "longitude: " +
